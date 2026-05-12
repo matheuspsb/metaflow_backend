@@ -3,7 +3,8 @@
     "allow": [
       "Bash(nest new *)",
       "Bash(npm install *)",
-      "Bash(npx prisma *)"
+      "Bash(npx prisma *)",
+      "Bash(node -e \"console.log\\(Object.keys\\(require\\('@prisma/adapter-pg'\\)\\)\\)\")"
     ]
   }
 }
