@@ -4,7 +4,9 @@
       "Bash(nest new *)",
       "Bash(npm install *)",
       "Bash(npx prisma *)",
-      "Bash(node -e \"console.log\\(Object.keys\\(require\\('@prisma/adapter-pg'\\)\\)\\)\")"
+      "Bash(node -e \"console.log\\(Object.keys\\(require\\('@prisma/adapter-pg'\\)\\)\\)\")",
+      "WebFetch(domain:docs.nestjs.com)",
+      "WebSearch"
     ]
   }
 }
