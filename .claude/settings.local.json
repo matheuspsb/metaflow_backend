@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(nest new *)"
+      "Bash(nest new *)",
+      "Bash(npm install *)",
+      "Bash(npx prisma *)"
     ]
   }
 }
