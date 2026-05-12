@@ -8,17 +8,25 @@ NestJS REST API with Prisma ORM and PostgreSQL.
 - **ORM**: Prisma 7 (driver adapter: `@prisma/adapter-pg`)
 - **Database**: PostgreSQL
 - **Language**: TypeScript
+- **Validation**: `class-validator` + `class-transformer`
+- **Password hashing**: `bcrypt` (salt rounds: 10)
 
 ## Project Structure
 
 ```
 src/
-  app.module.ts         # Root module
-  app.controller.ts     # Root controller (temporary, for testing)
-  app.service.ts        # Root service (temporary, for testing)
-  main.ts               # Entry point
+  app.module.ts               # Root module
+  app.controller.ts           # Root controller (temporary, for testing)
+  app.service.ts              # Root service (temporary, for testing)
+  main.ts                     # Entry point — ValidationPipe registered globally
   database/
-    prisma.service.ts   # PrismaService (extends PrismaClient)
+    prisma.service.ts         # PrismaService (extends PrismaClient with PrismaPg adapter)
+  dtos/
+    create-new-user-body.ts   # DTO for POST /users request body
+  repositories/
+    create-user-repository.ts              # Abstract repository contract
+    prisma/
+      prisma-user-repository.ts            # Prisma implementation
 
 prisma/
   schema.prisma         # Database schema and models
@@ -40,6 +48,21 @@ prisma.config.ts        # Prisma 7 config (reads DATABASE_URL from .env)
 - Use NestJS built-in pipes (`ValidationPipe`) globally in `main.ts`
 - Export only what other modules need — keep modules encapsulated
 
+## Repository Pattern (Dependency Inversion)
+
+- Define an abstract class in `src/repositories/<name>-repository.ts` as the contract
+- Implement it in `src/repositories/prisma/prisma-<name>-repository.ts`
+- Register in the module with `{ provide: AbstractClass, useClass: PrismaImpl }`
+- Controllers and services depend only on the abstract class — never on the Prisma implementation directly
+
+```ts
+// app.module.ts
+providers: [
+  PrismaService,
+  { provide: CreateUserRepository, useClass: PrismaUserRepository },
+]
+```
+
 ## Prisma
 
 - Generated client is at `generated/prisma/client` (root level, outside `src/`)
@@ -57,7 +80,7 @@ prisma.config.ts        # Prisma 7 config (reads DATABASE_URL from .env)
 | id | String (UUID) | Primary key |
 | name | String | |
 | email | String | Unique |
-| password | String | Store hashed only |
+| password | String | Store hashed only (bcrypt, 10 rounds) |
 | createdAt | DateTime | Auto |
 | updatedAt | DateTime | Auto |
 
