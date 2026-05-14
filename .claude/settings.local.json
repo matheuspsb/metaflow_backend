@@ -6,7 +6,8 @@
       "Bash(npx prisma *)",
       "Bash(node -e \"console.log\\(Object.keys\\(require\\('@prisma/adapter-pg'\\)\\)\\)\")",
       "WebFetch(domain:docs.nestjs.com)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(node -e \"const p = require\\('./generated/prisma'\\); console.log\\(Object.keys\\(p\\).filter\\(k => k.includes\\('Error'\\) || k.includes\\('Known'\\)\\)\\)\")"
     ]
   }
 }
