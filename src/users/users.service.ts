@@ -2,18 +2,24 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { Prisma, User } from 'generated/prisma/client';
 import { CreateUserRepository } from 'src/repositories/create-user-repository';
 import { DeleteUserRepository } from 'src/repositories/delete-user-repository';
+import { FindUserByIdRepository } from 'src/repositories/find-user-by-id-repository';
+import { UpdateUserPasswordRepository } from 'src/repositories/update-user-password-repository';
 import { CreateNewUserBody } from 'src/dtos/create-new-user-body';
+import { UpdateUserPasswordBody } from 'src/dtos/update-user-password-body';
 
 @Injectable()
 export class UsersService {
   constructor(
     private createUserRepository: CreateUserRepository,
     private deleteUserRepository: DeleteUserRepository,
+    private findUserByIdRepository: FindUserByIdRepository,
+    private updateUserPasswordRepository: UpdateUserPasswordRepository,
   ) {}
 
   async createUser(body: CreateNewUserBody): Promise<User> {
@@ -50,5 +56,29 @@ export class UsersService {
       }
       throw error;
     }
+  }
+
+  async updatePassword(
+    id: string,
+    body: UpdateUserPasswordBody,
+  ): Promise<User> {
+    const user = await this.findUserByIdRepository.findById(id);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const passwordMatch = await bcrypt.compare(
+      body.currentPassword,
+      user.password,
+    );
+
+    if (!passwordMatch) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    const hashedPassword = await bcrypt.hash(body.newPassword, 10);
+
+    return this.updateUserPasswordRepository.updatePassword(id, hashedPassword);
   }
 }
