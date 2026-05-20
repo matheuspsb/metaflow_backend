@@ -6,23 +6,13 @@ import {
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { Prisma, User } from 'generated/prisma/client';
-import { CreateUserRepository } from 'src/repositories/create-user-repository';
-import { DeleteUserRepository } from 'src/repositories/delete-user-repository';
-import { FindUserByIdRepository } from 'src/repositories/find-user-by-id-repository';
-import { UpdateUserPasswordRepository } from 'src/repositories/update-user-password-repository';
-import { FetchAllUsersRepository } from 'src/repositories/fetch-all-users-repository';
+import { UsersRepository } from 'src/repositories/users-repository';
 import { CreateNewUserBody } from 'src/dtos/create-new-user-body';
 import { UpdateUserPasswordBody } from 'src/dtos/update-user-password-body';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    private createUserRepository: CreateUserRepository,
-    private deleteUserRepository: DeleteUserRepository,
-    private findUserByIdRepository: FindUserByIdRepository,
-    private updateUserPasswordRepository: UpdateUserPasswordRepository,
-    private fetchAllUsersRepository: FetchAllUsersRepository,
-  ) {}
+  constructor(private usersRepository: UsersRepository) {}
 
   async createUser(body: CreateNewUserBody): Promise<User> {
     const { name, email, password } = body;
@@ -30,11 +20,7 @@ export class UsersService {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     try {
-      return await this.createUserRepository.createUser(
-        name,
-        email,
-        hashedPassword,
-      );
+      return await this.usersRepository.create(name, email, hashedPassword);
     } catch (error: unknown) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -46,9 +32,23 @@ export class UsersService {
     }
   }
 
+  async findUserById(id: string): Promise<User> {
+    const user = await this.usersRepository.findById(id);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
+  }
+
+  async fetchAllUsers(): Promise<User[]> {
+    return this.usersRepository.fetchAll();
+  }
+
   async deleteUser(id: string): Promise<User> {
     try {
-      return await this.deleteUserRepository.deleteUser(id);
+      return await this.usersRepository.delete(id);
     } catch (error: unknown) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -64,7 +64,7 @@ export class UsersService {
     id: string,
     body: UpdateUserPasswordBody,
   ): Promise<User> {
-    const user = await this.findUserByIdRepository.findById(id);
+    const user = await this.usersRepository.findById(id);
 
     if (!user) {
       throw new NotFoundException('User not found');
@@ -81,20 +81,6 @@ export class UsersService {
 
     const hashedPassword = await bcrypt.hash(body.newPassword, 10);
 
-    return this.updateUserPasswordRepository.updatePassword(id, hashedPassword);
-  }
-
-  async fetchAllUsers(): Promise<User[]> {
-    return this.fetchAllUsersRepository.fetchAll();
-  }
-
-  async findUserById(id: string): Promise<User> {
-    const user = await this.findUserByIdRepository.findById(id);
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    return user;
+    return this.usersRepository.updatePassword(id, hashedPassword);
   }
 }
