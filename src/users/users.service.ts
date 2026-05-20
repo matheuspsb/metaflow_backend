@@ -87,4 +87,14 @@ export class UsersService {
   async fetchAllUsers(): Promise<User[]> {
     return this.fetchAllUsersRepository.fetchAll();
   }
+
+  async findUserById(id: string): Promise<User> {
+    const user = await this.findUserByIdRepository.findById(id);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
+  }
 }

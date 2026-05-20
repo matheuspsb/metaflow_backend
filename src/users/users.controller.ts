@@ -21,6 +21,11 @@ export class UsersController {
     return this.usersService.fetchAllUsers();
   }
 
+  @Get(':id')
+  findUserById(@Param('id') id: string): Promise<User> {
+    return this.usersService.findUserById(id);
+  }
+
   @Post()
   createUser(@Body() body: CreateNewUserBody): Promise<User> {
     return this.usersService.createUser(body);
