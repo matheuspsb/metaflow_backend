@@ -10,6 +10,7 @@ import { CreateUserRepository } from 'src/repositories/create-user-repository';
 import { DeleteUserRepository } from 'src/repositories/delete-user-repository';
 import { FindUserByIdRepository } from 'src/repositories/find-user-by-id-repository';
 import { UpdateUserPasswordRepository } from 'src/repositories/update-user-password-repository';
+import { FetchAllUsersRepository } from 'src/repositories/fetch-all-users-repository';
 import { CreateNewUserBody } from 'src/dtos/create-new-user-body';
 import { UpdateUserPasswordBody } from 'src/dtos/update-user-password-body';
 
@@ -20,6 +21,7 @@ export class UsersService {
     private deleteUserRepository: DeleteUserRepository,
     private findUserByIdRepository: FindUserByIdRepository,
     private updateUserPasswordRepository: UpdateUserPasswordRepository,
+    private fetchAllUsersRepository: FetchAllUsersRepository,
   ) {}
 
   async createUser(body: CreateNewUserBody): Promise<User> {
@@ -80,5 +82,9 @@ export class UsersService {
     const hashedPassword = await bcrypt.hash(body.newPassword, 10);
 
     return this.updateUserPasswordRepository.updatePassword(id, hashedPassword);
+  }
+
+  async fetchAllUsers(): Promise<User[]> {
+    return this.fetchAllUsersRepository.fetchAll();
   }
 }
